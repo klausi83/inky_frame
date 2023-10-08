@@ -32,7 +32,7 @@ inky_frame.pcf_to_pico_rtc()
 graphics = PicoGraphics(DISPLAY)
 
 new_folder=False
-new_picture=True
+new_picture=False
 if ih.inky_frame.button_a.read():
     ih.inky_frame.button_a.led_on()
     new_folder=True
@@ -103,6 +103,8 @@ def get_new_picture_filename(full_path):
     # remove files from the list that aren't .jpgs or .jpegs
     files = [f for f in files if f.endswith(".jpg") or f.endswith(".jpeg")]
     file = files[random.randrange(len(files))]
+    ih.state['update_picture'] = False
+    ih.save_state(ih.state)
     return file
 
 def display_image(filename):
@@ -126,6 +128,13 @@ if ih.file_exists("state.json"):
 picture_folder = "/sd/Bilder"
 picture_current_subfolder=None
 try:
+    new_picture=ih.state['update_picture'] or new_picture
+    print("Set new_picture to: "+str(new_picture))
+except:
+    new_picture=True
+    print("Set new_picture in exception to: "+str(new_picture))
+
+try:
     picture_current_subfolder=ih.state['current_subfolder']
     if not is_dir(picture_folder+"/"+picture_current_subfolder):
         new_folder=True
@@ -142,8 +151,6 @@ while True:
     # pick a random file
     inky_frame.led_busy.brightness(1)
     inky_frame.led_busy.on()
-    
-    pictures_full_path = picture_folder + "/" + picture_current_subfolder
     
     if ih.inky_frame.button_a.read():
         ih.inky_frame.button_a.led_on()
@@ -162,12 +169,19 @@ while True:
     if new_folder:
         picture_current_subfolder=take_next_folder(picture_folder, picture_current_subfolder)
         gc.collect()
-        
+    
+    pictures_full_path = picture_folder + "/" + picture_current_subfolder
+    
     if new_picture:
+        ih.clear_button_leds()
+        ih.inky_frame.button_c.led_on()
         file=get_new_picture_filename(pictures_full_path)
+        gc.collect()
         # Open the file
         print(f"Displaying {pictures_full_path}/{file}")
         display_image(pictures_full_path + "/" + file)
+        print("Done drawing")
+    
     ih.clear_button_leds()
     inky_frame.led_busy.off()
     
