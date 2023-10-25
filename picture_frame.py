@@ -40,9 +40,15 @@ if ih.inky_frame.button_a.read():
     print("Button A was pressed, thus trying to find new folder")
 if ih.inky_frame.button_b.read() or inky_frame.woken_by_rtc():
     ih.inky_frame.button_b.led_on()
+    time.sleep(1)
     new_picture=True
     print("Button B was pressed or rtc-event happend, thus trying to display new picture")
-
+    
+if inky_frame.woken_by_rtc():
+    ih.inky_frame.button_c.led_on()
+    new_picture=True
+    print("Button B was pressed or rtc-event happend, thus trying to display new picture")
+    
 # set up the SD card
 try:
     sd_spi = SPI(0, sck=Pin(18, Pin.OUT), mosi=Pin(19, Pin.OUT), miso=Pin(16, Pin.OUT))
@@ -52,7 +58,7 @@ except:
     ih.inky_frame.button_d.led_on()
     ih.inky_frame.button_e.led_on()
     print("SD card could not be read")
-    time.sleep(3)
+    time.sleep(5)
     machine.reset()
 
 # Create a new JPEG decoder for our PicoGraphics
@@ -110,10 +116,12 @@ def get_new_picture_filename(full_path):
 def display_image(filename):
 
     # Open the JPEG file
+    ih.inky_frame.button_e.led_on()
     j.open_file(filename)
-
+    
     # Decode the JPEG
     j.decode(0, 0, jpegdec.JPEG_SCALE_FULL)
+    ih.inky_frame.button_e.led_off()
 
     # Display the result
     graphics.update()
@@ -144,7 +152,7 @@ except:
     new_folder=True
     print("Current subfolder not set")
     
-
+gc.collect()
 
 
 while True:
@@ -152,19 +160,19 @@ while True:
     inky_frame.led_busy.brightness(1)
     inky_frame.led_busy.on()
     
-    if ih.inky_frame.button_a.read():
-        ih.inky_frame.button_a.led_on()
-        new_folder=True
-        new_picture=True
-        gc.collect()
-        time.sleep(.5)
-        machine.reset()
+    #if ih.inky_frame.button_a.read():
+    #    ih.inky_frame.button_a.led_on()
+    #    new_folder=True
+    #    new_picture=True
+    #    gc.collect()
+    #    time.sleep(.5)
+    #    machine.reset()
         
-    if ih.inky_frame.button_b.read():
-        ih.inky_frame.button_b.led_on()
-        time.sleep(.5)
-        new_picture=True
-        machine.reset()
+    #if ih.inky_frame.button_b.read():
+    #    ih.inky_frame.button_b.led_on()
+    #    time.sleep(.5)
+    #    new_picture=True
+    #    machine.reset()
         
     if new_folder:
         picture_current_subfolder=take_next_folder(picture_folder, picture_current_subfolder)
@@ -174,7 +182,7 @@ while True:
     
     if new_picture:
         ih.clear_button_leds()
-        ih.inky_frame.button_c.led_on()
+        ih.inky_frame.button_d.led_on()
         file=get_new_picture_filename(pictures_full_path)
         gc.collect()
         # Open the file
@@ -189,5 +197,6 @@ while True:
     new_folder=False
 
     # Sleep or wait for a bit
+    gc.collect()
     print(f"Sleeping for {UPDATE_INTERVAL} minutes")
     inky_frame.sleep_for(UPDATE_INTERVAL)
