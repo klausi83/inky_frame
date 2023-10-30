@@ -30,6 +30,9 @@ inky_frame.pcf_to_pico_rtc()
 
 # set up the display
 graphics = PicoGraphics(DISPLAY)
+WIDTH, HEIGHT = graphics.get_bounds()
+graphics.set_font("bitmap8")
+
 
 new_folder=False
 new_picture=False
@@ -200,3 +203,4 @@ while True:
     gc.collect()
     print(f"Sleeping for {UPDATE_INTERVAL} minutes")
     inky_frame.sleep_for(UPDATE_INTERVAL)
+    new_picture=True
