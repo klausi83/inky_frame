@@ -44,7 +44,7 @@ if ih.inky_frame.button_a.read():
     new_folder=True
     new_picture=True
 
-if ih.inky_frame.button_b.read() or inky_frame.woken_by_rtc():
+if ih.inky_frame.button_b.read():
     if debug_level > 1:
         ih.inky_frame.button_b.led_on()
         print("Button B was pressed or rtc-event happend, thus trying to display new picture")
@@ -150,8 +150,12 @@ def get_new_picture_filename(full_path):
     # remove files from the list that aren't .jpgs or .jpegs
     files = [f for f in files if f.endswith(".jpg") or f.endswith(".jpeg")]
     if ih.state['file_order_random']:
+        if debug_level > 2:
+            print("Selecting new random picture")
         file = files[random.randrange(len(files))-1]
     else:
+        if debug_level > 2:
+            print("Selecting new ordered picture")
         picture_index=ih.state['picture_index']
         picture_index += 1
         if len(files)<= picture_index:
