@@ -25,6 +25,7 @@ import random
 
 # how often to change image (in minutes)
 UPDATE_INTERVAL = 120
+debug_level = 3
 
 inky_frame.pcf_to_pico_rtc()
 
@@ -37,20 +38,24 @@ graphics.set_font("bitmap8")
 new_folder=False
 new_picture=False
 if ih.inky_frame.button_a.read():
-    ih.inky_frame.button_a.led_on()
+    if debug_status > 1:
+        ih.inky_frame.button_a.led_on()
+        print("Button A was pressed, thus trying to find new folder")
     new_folder=True
     new_picture=True
-    print("Button A was pressed, thus trying to find new folder")
+
 if ih.inky_frame.button_b.read() or inky_frame.woken_by_rtc():
-    ih.inky_frame.button_b.led_on()
-    time.sleep(1)
+    if debug_status > 1:
+        ih.inky_frame.button_b.led_on()
+        print("Button B was pressed or rtc-event happend, thus trying to display new picture")
+        time.sleep(1)
     new_picture=True
-    print("Button B was pressed or rtc-event happend, thus trying to display new picture")
     
 if inky_frame.woken_by_rtc():
-    ih.inky_frame.button_c.led_on()
+    if debug_status > 1:
+        ih.inky_frame.button_c.led_on()
+        print("Button B was pressed or rtc-event happend, thus trying to display new picture")
     new_picture=True
-    print("Button B was pressed or rtc-event happend, thus trying to display new picture")
     
 # set up the SD card
 try:
@@ -86,23 +91,29 @@ def take_next_folder(pic_folder, pic_cur_subfolder=None):
     subfolders.sort()
     if pic_cur_subfolder:
         index_searched=None
-        print("in first if for \"index_searched\"")
+        if debug_status > 2:
+            print("in first if for \"index_searched\"")
         for i in range(len(subfolders)):
-            print("in loop: " + str(i) + " with " + subfolders[i])
+            if debug_status > 2:
+                print("in loop: " + str(i) + " with " + subfolders[i])
             if not index_searched:
-                print("before if")
+                if debug_status > 2:
+                    print("before if")
                 if subfolders[i]==pic_cur_subfolder:
-                    print("in if")
+                    if debug_status > 2:
+                        print("in if")
                     index_searched=i
         if index_searched != None:
-            print("index found is: "+str(index_searched)+" and used is "+str((index_searched+1)%len(subfolders)))
+            if debug_status > 2:
+                print("index found is: "+str(index_searched)+" and used is "+str((index_searched+1)%len(subfolders)))
             picture_current_subfolder=subfolders[(index_searched+1)%len(subfolders)]
         else:
             picture_current_subfolder=subfolders[0]
     else:
         picture_current_subfolder=subfolders[0]
     pictures_full_path = pic_folder + "/" + picture_current_subfolder
-    print("Current subfolder used: "+pic_folder+"/"+picture_current_subfolder)
+    if debug_status > 0:
+        print("Current subfolder used: "+pic_folder+"/"+picture_current_subfolder)
     ih.state['current_subfolder'] = picture_current_subfolder
     ih.save_state(ih.state)
     return picture_current_subfolder
@@ -140,7 +151,8 @@ picture_folder = "/sd/Bilder"
 picture_current_subfolder=None
 try:
     new_picture=ih.state['update_picture'] or new_picture
-    print("Set new_picture to: "+str(new_picture))
+    if debug_status > 1:
+        print("Set new_picture to: "+str(new_picture))
 except:
     new_picture=True
     print("Set new_picture in exception to: "+str(new_picture))
